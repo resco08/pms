@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Executive Dashboard - PMS & RMS</title>
+<!-- Bootstrap 5.3 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+  --pm-primary: #3157d5;
+  --pm-primary-dark: #2445b4;
+  --pm-ink: #172033;
+  --pm-muted: #697386;
+  --pm-line: #e6eaf1;
+  --pm-surface: #ffffff;
+  --pm-page: #f5f7fb;
+  --pm-shadow: 0 12px 32px rgba(22, 34, 59, .07);
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--pm-page) !important;
+  color: var(--pm-ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: -.01em;
+}
+
+/* Header & Navigation matched to pms_2.html & rms_2.html */
+.navbar {
+  background: linear-gradient(115deg, #2445b4 0%, #4269e8 100%) !important;
+  min-height: 76px;
+  box-shadow: 0 5px 18px rgba(36, 69, 180, .18);
+}
+.navbar .container { max-width: 1240px; }
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  font-size: 1.2rem;
+  letter-spacing: -.035em;
+  font-weight: 800;
+}
+.navbar-brand::before {
+  content: "D";
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: var(--pm-primary);
+  background: #fff;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+/* Responsive Navigation Links */
+.nav-pill-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  padding: .4rem .75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: clamp(0.72rem, 1.8vw, 0.9rem);
+  transition: all .16s ease;
+  white-space: nowrap;
+}
+.nav-pill-link:hover, .nav-pill-link.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+main.container { max-width: 1240px; padding-top: .25rem; }
+
+/* KPI Cards */
+.kpi-card {
+  background: var(--pm-surface);
+  border: 1px solid var(--pm-line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--pm-shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
+  height: 100%;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(22, 34, 59, .1);
+}
+.kpi-title {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--pm-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--pm-ink);
+  margin-top: .3rem;
+  line-height: 1.2;
+}
+.kpi-sub {
+  font-size: .8rem;
+  color: var(--pm-muted);
+  margin-top: .4rem;
+}
+.kpi-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Card Styling */
+.card {
+  border: 1px solid var(--pm-line);
+  border-radius: 16px;
+  box-shadow: var(--pm-shadow) !important;
+  background: #fff;
+}
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--pm-line);
+  padding: 1rem 1.25rem;
+}
+
+/* Buttons */
+.btn {
+  min-height: 40px;
+  border-radius: 9px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.btn-sm { min-height: 32px; font-size: .82rem; }
+.btn:hover { transform: translateY(-1px); }
+.btn-primary {
+  background: var(--pm-primary);
+  border-color: var(--pm-primary);
+  box-shadow: 0 4px 10px rgba(49, 87, 213, .15);
+}
+.btn-primary:hover {
+  background: var(--pm-primary-dark);
+  border-color: var(--pm-primary-dark);
+}
+
+/* Form inputs */
+.form-control, .form-select {
+  min-height: 42px;
+  border-color: #dce2ec;
+  border-radius: 9px;
+  color: var(--pm-ink);
+  box-shadow: none !important;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #8ca3f3;
+  box-shadow: 0 0 0 .2rem rgba(49, 87, 213, .12) !important;
+}
+
+/* Custom Data Tables */
+.table thead th {
+  padding: 0.85rem .9rem;
+  background: #f8faff;
+  color: #667085;
+  border-bottom: 1px solid var(--pm-line);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.table tbody td {
+  padding: .85rem .9rem;
+  border-color: #edf0f5;
+  vertical-align: middle;
+  font-size: .9rem;
+}
+
+/* Toast */
+.toast-container { z-index: 1095; }
+
+/* Receipt Paper Modal Print */
+.receipt-paper {
+  max-width: 680px;
+  margin: auto;
+  background: #fff;
+  border: 1px solid #e7eaf0;
+  border-radius: 12px;
+  padding: 24px;
+  color: #172033;
+}
+.receipt-paper .receipt-top {
+  border-bottom: 2px dashed #d9deea;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+.receipt-paper table { width: 100%; border-collapse: collapse; }
+.receipt-paper th, .receipt-paper td { padding: 8px 4px; border-bottom: 1px solid #edf0f5; }
+.receipt-paper .total-row td { font-weight: 800; font-size: 1.05rem; border-top: 2px solid #172033; }
+
+/* Mobile Responsive Optimization Breakpoints */
+@media (max-width: 767.98px) {
+  main.container { padding-left: 1rem; padding-right: 1rem; }
+  .navbar-brand { font-size: 1.05rem; }
+  .navbar-brand::before { width: 32px; height: 32px; font-size: .95rem; }
+  .nav-pill-link {
+    padding: .3rem .5rem;
+    font-size: .78rem;
+  }
+
+  .action-bar-btns > button, .action-bar-btns > label {
+    flex: 1 1 calc(50% - .35rem) !important;
+    min-width: 0;
+    font-size: .84rem;
+  }
+  .action-bar-btns > button#openPosBtn {
+    flex: 1 1 100% !important;
+  }
+
+  /* Transform Tables to Card Layout on Mobile */
+  .table-responsive { overflow: visible; }
+  .table, .table tbody { display: block; width: 100%; }
+  .table thead { display: none; }
+  .table tbody tr {
+    display: block;
+    margin: .65rem;
+    padding: .8rem .9rem;
+    border: 1px solid var(--pm-line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(22, 34, 59, .035);
+  }
+  .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    padding: .45rem 0;
+    border: 0;
+    border-bottom: 1px solid #f0f2f6;
+    text-align: right !important;
+    white-space: normal !important;
+    background: transparent !important;
+    font-size: .88rem;
+  }
+  .table tbody td:last-child { border-bottom: 0; }
+  .table tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 40%;
+    color: #788397;
+    font-size: .76rem;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+  }
+  .table tbody td.empty-row {
+    display: block;
+    text-align: center !important;
+  }
+  .table tbody td.empty-row::before { content: none; }
+}
+
+@media (max-width: 380px) {
+  .navbar-brand { font-size: .95rem; }
+  .nav-pill-link {
+    padding: .25rem .38rem;
+    font-size: .72rem;
+  }
+}
+
+@media print {
+  body * { visibility: hidden !important; }
+  #viewModal, #viewModal *, #receiptPreview, #receiptPreview * { visibility: visible !important; }
+  #viewModal { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; background: #fff !important; }
+  .modal-header, .modal-footer, .no-print { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Navbar Header with Fluid Responsive Links -->
+  <nav class="navbar navbar-dark mb-4">
+    <div class="container">
+      <span class="navbar-brand fw-bold mb-0 h1">Executive Dashboard</span>
+      <div class="d-flex align-items-center gap-1 gap-sm-2">
+        <a href="./index.html" class="nav-pill-link active">Dashboard</a>
+        <a href="./pms.html" class="nav-pill-link">Products (PMS)</a>
+        <a href="./rms.html" class="nav-pill-link">Receipts (RMS)</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container pb-5">
+    <!-- Action Bar & Controls -->
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h4 h3-md fw-bold mb-1">Business Analytics & Operations</h1>
+        <p class="text-secondary small mb-0">Live unified data from Product Management (PMS) and Receipt Management (RMS).</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2 w-100 w-md-auto action-bar-btns">
+        <button class="btn btn-primary" id="openPosBtn">⚡ Express Checkout Terminal</button>
+        <button class="btn btn-outline-secondary" id="exportEcosystemBtn">📥 Export Master DB</button>
+        <label class="btn btn-outline-secondary mb-0">
+          📤 Import Master DB
+          <input type="file" id="importEcosystemInput" accept=".json" hidden>
+        </label>
+        <button class="btn btn-outline-danger" id="seedDemoBtn" title="Pre-fill local storage with test data">🌱 Seed Demo Data</button>
+      </div>
+    </div>
+
+    <!-- Executive KPI Cards Grid -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card d-flex align-items-center justify-content-between">
+          <div>
+            <div class="kpi-title">Total Revenue</div>
+            <div class="kpi-value text-primary" id="kpiTotalRevenue">₱0.00</div>
+            <div class="kpi-sub" id="kpiReceiptCount">0 receipts issued</div>
+          </div>
+          <div class="kpi-icon-badge bg-primary bg-opacity-10 text-primary">💰</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card d-flex align-items-center justify-content-between">
+          <div>
+            <div class="kpi-title">This Month Sales</div>
+            <div class="kpi-value text-success" id="kpiMonthSales">₱0.00</div>
+            <div class="kpi-sub" id="kpiMonthCount">0 receipts this month</div>
+          </div>
+          <div class="kpi-icon-badge bg-success bg-opacity-10 text-success">📈</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card d-flex align-items-center justify-content-between">
+          <div>
+            <div class="kpi-title">Inventory Valuation</div>
+            <div class="kpi-value" id="kpiInventoryValue">₱0.00</div>
+            <div class="kpi-sub" id="kpiTotalUnits">0 units across 0 items</div>
+          </div>
+          <div class="kpi-icon-badge bg-info bg-opacity-10 text-info">📦</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card d-flex align-items-center justify-content-between">
+          <div>
+            <div class="kpi-title">Low Stock Alert</div>
+            <div class="kpi-value text-danger" id="kpiLowStock">0</div>
+            <div class="kpi-sub">Items with &lt; 8 units left</div>
+          </div>
+          <div class="kpi-icon-badge bg-danger bg-opacity-10 text-danger">⚠️</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row g-3 g-md-4 mb-4">
+      <div class="col-12 col-lg-8">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">Revenue Trend (Recent Months)</h2>
+            <span class="badge text-bg-light border">RMS Sales Data</span>
+          </div>
+          <div class="card-body">
+            <div style="height: 250px; position: relative;">
+              <canvas id="salesTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">Inventory by Category</h2>
+            <span class="badge text-bg-light border">PMS Stock</span>
+          </div>
+          <div class="card-body">
+            <div style="height: 250px; position: relative;">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-3 g-md-4 mb-4">
+      <div class="col-12 col-lg-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">Top 5 Selling Products (by Revenue)</h2>
+            <span class="badge text-bg-light border">Performance</span>
+          </div>
+          <div class="card-body">
+            <div style="height: 230px; position: relative;">
+              <canvas id="topProductsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">Stock Level Distribution</h2>
+            <span class="badge text-bg-light border">Inventory Health</span>
+          </div>
+          <div class="card-body">
+            <div style="height: 230px; position: relative;">
+              <canvas id="stockHealthChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables Row: Low Stock Restock Hub & Recent Receipts -->
+    <div class="row g-3 g-md-4 mb-4">
+      <!-- Low Stock Hub -->
+      <div class="col-12 col-xl-5">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0 text-danger">⚠️ Stock Restock Hub</h2>
+            <a href="./pms.html" class="btn btn-sm btn-outline-primary">Manage Products &raquo;</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th class="text-end">Stock</th>
+                  <th class="text-end">Quick Restock</th>
+                </tr>
+              </thead>
+              <tbody id="lowStockTableRows">
+                <!-- Dynamically Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions Hub -->
+      <div class="col-12 col-xl-7">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">🧾 Recent Receipts</h2>
+            <a href="./rms.html" class="btn btn-sm btn-outline-primary">All Receipts &raquo;</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Receipt</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Payment</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody id="recentReceiptsRows">
+                <!-- Dynamically Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-secondary small mb-0 text-center">Powered by KyleTech • Unified Ecosystem for Product Management & Receipt Systems.</p>
+  </main>
+</div>
+
+<!-- Express Checkout Terminal Modal -->
+<div class="modal fade" id="posModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-fullscreen-sm-down modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h2 class="modal-title fs-5 fw-bold">⚡ Express POS Checkout</h2>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="posForm">
+          <div class="row g-2 g-md-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label for="posCustomer" class="form-label fw-bold small">Customer Name</label>
+              <input type="text" id="posCustomer" class="form-control" required placeholder="Walk-in Customer" value="Walk-in Customer">
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="posPayment" class="form-label fw-bold small">Payment Method</label>
+              <select id="posPayment" class="form-select">
+                <option>Cash</option>
+                <option>GCash</option>
+                <option>Bank transfer</option>
+                <option>Credit / Debit card</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="posProductSelect" class="form-label fw-bold small">Select Product from PMS Inventory</label>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+              <select id="posProductSelect" class="form-select flex-grow-1">
+                <!-- Populated via JS -->
+              </select>
+              <button type="button" class="btn btn-primary text-nowrap" id="posAddProductBtn">+ Add Item</button>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <div class="border rounded-3 overflow-hidden mb-3">
+            <table class="table table-sm mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Product</th>
+                  <th style="width: 80px;">Qty</th>
+                  <th class="text-end">Price</th>
+                  <th class="text-end">Subtotal</th>
+                  <th style="width: 30px;"></th>
+                </tr>
+              </thead>
+              <tbody id="posCartRows">
+                <!-- Cart Items -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="row justify-content-end">
+            <div class="col-12 col-md-6">
+              <div class="d-flex justify-content-between py-1"><span class="text-secondary">Subtotal</span><strong id="posSubtotal">₱0.00</strong></div>
+              <div class="d-flex justify-content-between py-1 text-secondary small"><span>12% VAT Breakdown</span><span id="posVat">₱0.00</span></div>
+              <div class="d-flex justify-content-between py-2 border-top fs-5 fw-bold text-primary"><span>Total Due</span><span id="posTotal">₱0.00</span></div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer flex-column flex-sm-row gap-2">
+        <button type="button" class="btn btn-outline-secondary w-100 w-sm-auto" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary w-100 w-sm-auto" id="posSubmitBtn">Checkout & Issue Receipt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="appToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Dashboard loaded successfully.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Key Configuration
+const PRODUCTS_KEY = 'products-v1';
+const RECEIPTS_KEY = 'receipt-management-v1';
+const SETTINGS_KEY = 'receipt-settings-v1';
+const COUNTER_KEY  = 'receipt-counter-v1';
+
+const CUR = '₱';
+const $ = id => document.getElementById(id);
+const money = n => CUR + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const notify = msg => { $('toastMessage').textContent = msg; bootstrap.Toast.getOrCreateInstance($('appToast')).show(); };
+
+// State Variables
+let products = [];
+let receipts = [];
+let settings = {};
+let cart = [];
+
+// Chart Instances
+let salesChartInst = null;
+let categoryChartInst = null;
+let topProdChartInst = null;
+let stockHealthChartInst = null;
+
+// Initial Load
+window.addEventListener('DOMContentLoaded', () => {
+  loadAllData();
+  renderDashboard();
+});
+
+function loadAllData() {
+  try { products = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || []; } catch(e) { products = []; }
+  try { receipts = JSON.parse(localStorage.getItem(RECEIPTS_KEY)) || []; } catch(e) { receipts = []; }
+  try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || { businessName: 'Store Ecosystem' }; } catch(e) { settings = {}; }
+}
+
+function saveProducts() { try { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); } catch(e) {} }
+function saveReceipts() { try { localStorage.setItem(RECEIPTS_KEY, JSON.stringify(receipts)); } catch(e) {} }
+
+function renderDashboard() {
+  loadAllData();
+  renderKPIs();
+  renderCharts();
+  renderLowStockTable();
+  renderRecentReceiptsTable();
+  populatePosDropdown();
+}
+
+// 1. KPI Calculations
+function renderKPIs() {
+  const totalRevenue = receipts.reduce((sum, r) => sum + calcReceiptTotal(r), 0);
+  const totalProducts = products.length;
+  const totalUnits = products.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
+  const inventoryValue = products.reduce((sum, p) => sum + ((Number(p.price) || 0) * (Number(p.stock) || 0)), 0);
+  const lowStockCount = products.filter(p => (Number(p.stock) || 0) < 8).length;
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const monthReceipts = receipts.filter(r => (r.date || '').startsWith(currentMonth));
+  const monthSales = monthReceipts.reduce((sum, r) => sum + calcReceiptTotal(r), 0);
+
+  $('kpiTotalRevenue').textContent = money(totalRevenue);
+  $('kpiReceiptCount').textContent = `${receipts.length} receipts issued`;
+  
+  $('kpiMonthSales').textContent = money(monthSales);
+  $('kpiMonthCount').textContent = `${monthReceipts.length} receipts this month`;
+
+  $('kpiInventoryValue').textContent = money(inventoryValue);
+  $('kpiTotalUnits').textContent = `${totalUnits.toLocaleString()} units (${totalProducts} products)`;
+
+  $('kpiLowStock').textContent = lowStockCount;
+}
+
+function calcReceiptTotal(r) {
+  const itemsTotal = (r.items || []).reduce((s, i) => s + (Number(i.qty) * Number(i.price)), 0);
+  return Math.max(0, itemsTotal - Number(r.discount || 0));
+}
+
+// 2. Visualizations (Chart.js)
+function renderCharts() {
+  // A. Monthly Revenue Chart
+  const monthsMap = {};
+  receipts.forEach(r => {
+    const m = (r.date || '').slice(0, 7);
+    if (m) monthsMap[m] = (monthsMap[m] || 0) + calcReceiptTotal(r);
+  });
+  const sortedMonths = Object.keys(monthsMap).sort().slice(-6);
+  const monthlyData = sortedMonths.map(m => monthsMap[m]);
+
+  if (salesChartInst) salesChartInst.destroy();
+  salesChartInst = new Chart($('salesTrendChart'), {
+    type: 'line',
+    data: {
+      labels: sortedMonths.length ? sortedMonths : ['No Data'],
+      datasets: [{
+        label: 'Revenue (₱)',
+        data: sortedMonths.length ? monthlyData : [0],
+        borderColor: '#3157d5',
+        backgroundColor: 'rgba(49, 87, 213, 0.08)',
+        fill: true,
+        tension: 0.35,
+        borderWidth: 3
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // B. Category Chart
+  const catMap = {};
+  products.forEach(p => {
+    const cat = p.category?.trim() || 'Uncategorized';
+    catMap[cat] = (catMap[cat] || 0) + (Number(p.stock) || 0);
+  });
+
+  if (categoryChartInst) categoryChartInst.destroy();
+  categoryChartInst = new Chart($('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(catMap).length ? Object.keys(catMap) : ['None'],
+      datasets: [{
+        data: Object.keys(catMap).length ? Object.values(catMap) : [1],
+        backgroundColor: ['#3157d5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // C. Top Selling Products
+  const prodSalesMap = {};
+  receipts.forEach(r => {
+    (r.items || []).forEach(i => {
+      const name = i.name || 'Unknown';
+      prodSalesMap[name] = (prodSalesMap[name] || 0) + (Number(i.qty) * Number(i.price));
+    });
+  });
+  const topProds = Object.entries(prodSalesMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+  if (topProdChartInst) topProdChartInst.destroy();
+  topProdChartInst = new Chart($('topProductsChart'), {
+    type: 'bar',
+    data: {
+      labels: topProds.length ? topProds.map(p => p[0]) : ['No Sales Yet'],
+      datasets: [{
+        label: 'Sales (₱)',
+        data: topProds.length ? topProds.map(p => p[1]) : [0],
+        backgroundColor: '#10b981',
+        borderRadius: 6
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y' }
+  });
+
+  // D. Stock Health Distribution
+  const lowCount = products.filter(p => Number(p.stock) < 8).length;
+  const goodCount = products.length - lowCount;
+
+  if (stockHealthChartInst) stockHealthChartInst.destroy();
+  stockHealthChartInst = new Chart($('stockHealthChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Adequate Stock (≥ 8)', 'Low Stock (< 8)'],
+      datasets: [{
+        data: [goodCount, lowCount],
+        backgroundColor: ['#10b981', '#ef4444']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+// 3. Table Renderers
+function renderLowStockTable() {
+  const lowProds = products.filter(p => Number(p.stock) < 8);
+  const tbody = $('lowStockTableRows');
+  
+  if (!lowProds.length) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty-row text-center text-success py-3">✓ All products have sufficient stock levels!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lowProds.map(p => `
+    <tr>
+      <td data-label="Item">
+        <div class="fw-semibold">${esc(p.name)}</div>
+        <div class="text-secondary small">${esc(p.number || 'No Code')}</div>
+      </td>
+      <td data-label="Stock" class="text-end fw-bold text-danger">${p.stock}</td>
+      <td data-label="Quick Restock" class="text-end">
+        <button class="btn btn-sm btn-outline-success" onclick="quickRestock('${p.id}')">+ Restock (+10)</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function quickRestock(prodId) {
+  const p = products.find(x => x.id === prodId);
+  if (p) {
+    p.stock = (Number(p.stock) || 0) + 10;
+    saveProducts();
+    renderDashboard();
+    notify(`Restocked 10 units for ${p.name}`);
+  }
+}
+
+function renderRecentReceiptsTable() {
+  const recent = [...receipts].sort((a,b) => (b.date||'').localeCompare(a.date||'') || b.createdAt - a.createdAt).slice(0, 6);
+  const tbody = $('recentReceiptsRows');
+
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-row text-center text-secondary py-3">No receipts issued yet. Use Express Checkout to create one!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recent.map(r => `
+    <tr>
+      <td data-label="Receipt" class="fw-semibold">${esc(r.number)}</td>
+      <td data-label="Customer">${esc(r.customer)}</td>
+      <td data-label="Date" class="small text-secondary">${esc(r.date)}</td>
+      <td data-label="Payment"><span class="badge text-bg-light border">${esc(r.payment)}</span></td>
+      <td data-label="Total" class="text-end fw-bold">${money(calcReceiptTotal(r))}</td>
+    </tr>
+  `).join('');
+}
+
+// 4. POS Terminal Execution
+function populatePosDropdown() {
+  const sel = $('posProductSelect');
+  sel.innerHTML = products.length 
+    ? products.map(p => `<option value="${p.id}">${esc(p.name)} (${esc(p.number || 'N/A')}) — ${money(p.price)} [Stock: ${p.stock}]</option>`).join('')
+    : '<option value="">No products in inventory</option>';
+}
+
+$('openPosBtn').addEventListener('click', () => {
+  cart = [];
+  renderCart();
+  bootstrap.Modal.getOrCreateInstance($('posModal')).show();
+});
+
+$('posAddProductBtn').addEventListener('click', () => {
+  const prodId = $('posProductSelect').value;
+  const prod = products.find(p => p.id === prodId);
+  if (!prod) return;
+
+  const existing = cart.find(c => c.id === prodId);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ id: prod.id, pnum: prod.number, name: prod.name, price: Number(prod.price), qty: 1 });
+  }
+  renderCart();
+});
+
+function renderCart() {
+  const tbody = $('posCartRows');
+  if (!cart.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-secondary py-3">Cart is empty. Select a product above.</td></tr>`;
+  } else {
+    tbody.innerHTML = cart.map((item, idx) => `
+      <tr>
+        <td>${esc(item.name)}</td>
+        <td><input type="number" min="1" class="form-control form-control-sm" value="${item.qty}" onchange="updateCartQty(${idx}, this.value)"></td>
+        <td class="text-end">${money(item.price)}</td>
+        <td class="text-end fw-semibold">${money(item.qty * item.price)}</td>
+        <td><button type="button" class="btn btn-sm text-danger" onclick="removeCartItem(${idx})">&times;</button></td>
+      </tr>
+    `).join('');
+  }
+
+  const sub = cart.reduce((s, i) => s + (i.qty * i.price), 0);
+  const vat = (sub / 1.12) * 0.12;
+
+  $('posSubtotal').textContent = money(sub);
+  $('posVat').textContent = money(vat);
+  $('posTotal').textContent = money(sub);
+}
+
+function updateCartQty(idx, val) {
+  const q = parseInt(val, 10);
+  if (q > 0) cart[idx].qty = q;
+  renderCart();
+}
+
+function removeCartItem(idx) {
+  cart.splice(idx, 1);
+  renderCart();
+}
+
+$('posSubmitBtn').addEventListener('click', () => {
+  if (!cart.length) { alert('Cart is empty.'); return; }
+
+  // Generate Receipt Number
+  let counter = 1;
+  try { counter = parseInt(localStorage.getItem(COUNTER_KEY) || '1', 10); } catch(e){}
+  const nextNum = 'R-' + String(counter).padStart(4, '0');
+
+  const newReceipt = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    number: nextNum,
+    customer: $('posCustomer').value.trim() || 'Walk-in Customer',
+    date: new Date().toISOString().slice(0, 10),
+    payment: $('posPayment').value,
+    discount: 0,
+    items: cart.map(c => ({ pnum: c.pnum, name: c.name, qty: c.qty, price: c.price })),
+    createdAt: Date.now()
+  };
+
+  // Sync Inventory
+  cart.forEach(cItem => {
+    const p = products.find(x => x.id === cItem.id);
+    if (p) p.stock = Math.max(0, (Number(p.stock) || 0) - cItem.qty);
+  });
+
+  // Save Receipts & Products & Increment Counter
+  receipts.push(newReceipt);
+  saveReceipts();
+  saveProducts();
+  try { localStorage.setItem(COUNTER_KEY, (counter + 1).toString()); } catch(e){}
+
+  bootstrap.Modal.getOrCreateInstance($('posModal')).hide();
+  renderDashboard();
+  notify(`Issued Receipt ${nextNum} and deducted inventory stock!`);
+});
+
+// 5. Ecosystem Backup & Seed Data
+$('exportEcosystemBtn').addEventListener('click', () => {
+  const payload = {
+    app: 'PMS-RMS-Ecosystem',
+    exportedAt: new Date().toISOString(),
+    products,
+    receipts,
+    settings
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ecosystem-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  notify('Master Ecosystem JSON Exported!');
+});
+
+$('importEcosystemInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if (Array.isArray(data.products)) localStorage.setItem(PRODUCTS_KEY, JSON.stringify(data.products));
+      if (Array.isArray(data.receipts)) localStorage.setItem(RECEIPTS_KEY, JSON.stringify(data.receipts));
+      if (data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
+      renderDashboard();
+      notify('Successfully imported Ecosystem data!');
+    } catch(err) {
+      alert('Invalid ecosystem JSON backup file.');
+    }
+  };
+  reader.readAsText(file);
+});
+
+$('seedDemoBtn').addEventListener('click', () => {
+  if (!confirm('This will populate local storage with demo products and receipts. Continue?')) return;
+
+  const demoProducts = [
+    { id: 'p1', number: 'P-001', name: 'Wireless Ergonomic Mouse', category: 'Accessories', price: 25.00, stock: 45, description: '2.4GHz Silent' },
+    { id: 'p2', number: 'P-002', name: 'USB-C Fast Cable 1m', category: 'Accessories', price: 8.50, stock: 4, description: 'Braided Nylon' },
+    { id: 'p3', number: 'P-003', name: 'Mechanical Keyboard RGB', category: 'Peripherals', price: 79.99, stock: 12, description: 'Brown Switches' },
+    { id: 'p4', number: 'P-004', name: '27-inch 4K Monitor', category: 'Displays', price: 320.00, stock: 3, description: 'IPS 144Hz' },
+    { id: 'p5', number: 'P-005', name: 'HD Webcam 1080p', category: 'Peripherals', price: 45.00, stock: 6, description: 'Auto Focus' }
+  ];
+
+  const demoReceipts = [
+    { id: 'r1', number: 'R-0001', customer: 'Acme Corp', date: new Date().toISOString().slice(0, 10), payment: 'Cash', items: [{ pnum: 'P-001', name: 'Wireless Ergonomic Mouse', qty: 2, price: 25.00 }], createdAt: Date.now() - 86400000 },
+    { id: 'r2', number: 'R-0002', customer: 'Jane Doe', date: new Date().toISOString().slice(0, 10), payment: 'GCash', items: [{ pnum: 'P-003', name: 'Mechanical Keyboard RGB', qty: 1, price: 79.99 }], createdAt: Date.now() }
+  ];
+
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(demoProducts));
+  localStorage.setItem(RECEIPTS_KEY, JSON.stringify(demoReceipts));
+  localStorage.setItem(COUNTER_KEY, '3');
+
+  renderDashboard();
+  notify('Demo data loaded successfully!');
+});
+
+/* =================================================_
+   Inactivity Auto-Lock Script (5-Minute Timeout)
+   ================================================= */
+(function() {
+  const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const PASSWORD_KEY = 'app-lock-password';
+  const LOCKED_STATE_KEY = 'app-is-locked';
+  const LAST_ACTIVE_KEY = 'app-last-active';
+
+  // Set default master password if none exists (Default: '1234')
+  if (!localStorage.getItem(PASSWORD_KEY)) {
+    localStorage.setItem(PASSWORD_KEY, 'Admin@2026');
+  }
+
+  // Check lock status on load and periodically
+  function checkLockStatus() {
+    const isLocked = localStorage.getItem(LOCKED_STATE_KEY) === 'true';
+    const lastActive = parseInt(localStorage.getItem(LAST_ACTIVE_KEY) || Date.now(), 10);
+    const now = Date.now();
+
+    if (isLocked || (now - lastActive > LOCK_TIMEOUT)) {
+      lockApp();
+    }
+  }
+
+  // Update last active timestamp on user interaction
+  function updateActivity() {
+    if (localStorage.getItem(LOCKED_STATE_KEY) !== 'true') {
+      localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+    }
+  }
+
+  // Trigger the lock state
+  function lockApp() {
+    localStorage.setItem(LOCKED_STATE_KEY, 'true');
+    showLockOverlay();
+  }
+
+  // Render the lock screen modal over the page
+  function showLockOverlay() {
+    if (document.getElementById('appLockOverlay')) return; // Prevent duplicates
+
+    const overlay = document.createElement('div');
+    overlay.id = 'appLockOverlay';
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(23, 32, 51, 0.96); z-index: 999999;
+      display: flex; align-items: center; justify-content: center;
+      font-family: Inter, sans-serif; backdrop-filter: blur(4px);
+    `;
+
+    overlay.innerHTML = `
+      <div style="background: #ffffff; color: #172033; padding: 2.5rem; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
+        <h3 style="font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem;">Session Locked</h3>
+        <p style="color: #697386; font-size: 0.88rem; margin-bottom: 1.5rem;">Session locked due to 5 minutes of inactivity or page refresh.</p>
+        
+        <form id="lockForm" style="text-align: left;">
+          <div style="margin-bottom: 1.25rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #697386; text-transform: uppercase; display: block; margin-bottom: 0.4rem;">Master Password</label>
+            <input type="password" id="lockPasswordInput" class="form-control" placeholder="Enter password" required autocomplete="current-password" style="width: 100%; padding: 0.75rem; border: 1px solid #dce2ec; border-radius: 9px; font-size: 0.95rem;">
+          </div>
+          <button type="submit" class="btn btn-primary w-100" style="width: 100%; padding: 0.75rem; background: #3157d5; color: #fff; border: none; border-radius: 9px; font-weight: 600; cursor: pointer;">Unlock Ecosystem</button>
+        </form>
+        <div style="margin-top: 1rem;">
+          <small style="color: #94a3b8; font-size: 0.75rem;">Contact your service provider for the Password.</small>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.getElementById('lockPasswordInput').focus();
+
+    // Handle unlock submission
+    document.getElementById('lockForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const enteredPwd = document.getElementById('lockPasswordInput').value;
+      const storedPwd = localStorage.getItem(PASSWORD_KEY) || 'Admin@2026';
+
+      if (enteredPwd === storedPwd) {
+        localStorage.setItem(LOCKED_STATE_KEY, 'false');
+        localStorage.setItem(LAST_ACTIVE_KEY, Date.now().toString());
+        overlay.remove();
+      } else {
+        alert('Incorrect password.');
+        document.getElementById('lockPasswordInput').value = '';
+        document.getElementById('lockPasswordInput').focus();
+      }
+    });
+  }
+
+  // Track user interaction events
+  ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
+    window.addEventListener(eventName, updateActivity, { passive: true });
+  });
+
+  // Check lock condition every 10 seconds while tab is open
+  setInterval(checkLockStatus, 10000);
+
+  // Check immediately when DOM loads or page is refreshed
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', checkLockStatus);
+  } else {
+    checkLockStatus();
+  }
+})();
+</script>
+</body>
+</html>
